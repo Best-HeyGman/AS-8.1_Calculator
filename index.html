@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AS-8.1 Calculator</title>
+  <style>
+    @font-face {
+      font-family: "DigitalNumbers-Regular";
+      src: url("DigitalNumbers-Regular.ttf");
+    }
+    
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /*min-height: 100vh;*/
+      min-heigth: 100%;
+      font-family: Arial, sans-serif;
+    }
+
+    .calculator {
+      width: 100%;
+      max-width: 300px;
+      background: #333;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .screen-container {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .memory-indicator {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      color: #d9534f;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .screen {
+      background: #fff;
+      color: #000;
+      padding: 15px;
+      text-align: right;
+      border: 1px solid #000;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      border-radius: 4px;
+      font-size: 42px;
+      font-family: "DigitalNumbers-Regular", monospace;
+      overflow: clip;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+    }
+
+    .btn {
+      padding: 15px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform 0.1s ease, background-color 0.1s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn.pressed {
+      transform: scale(0.95);
+      background-color: #333;
+    }
+
+    .btn.on-c, .btn.cl {
+      background: #d9534f;
+      color: white;
+    }
+
+    .btn.zero {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 600px) {
+      .btn {
+        padding: 20px;
+        font-size: 20px;
+      }
+
+      .screen {
+        height: 60px;
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="screen-container">
+      <div class="memory-indicator" id="memory-indicator"></div>
+      <div class="screen" id="screen">0</div>
+    </div>
+    <div class="buttons">
+      <button class="btn on-c" onclick="clearAll()">ON/C</button>
+      <button class="btn" onclick="memoryRecall()">RM</button>
+      <button class="btn" onclick="memoryAdd()">M+</button>
+      <button class="btn" onclick="memorySubtract()">M-</button>
+      <button class="btn cl" onclick="clearEntry()">CL</button>
+      <button class="btn" onclick="percentage()">% ±</button>
+      <button class="btn" onclick="squareRoot()">√</button>
+      <button class="btn" onclick="appendOperator('/')">÷</button>
+      <button class="btn" onclick="appendNumber('7')">7</button>
+      <button class="btn" onclick="appendNumber('8')">8</button>
+      <button class="btn" onclick="appendNumber('9')">9</button>
+      <button class="btn" onclick="appendOperator('*')">x</button>
+      <button class="btn" onclick="appendNumber('4')">4</button>
+      <button class="btn" onclick="appendNumber('5')">5</button>
+      <button class="btn" onclick="appendNumber('6')">6</button>
+      <button class="btn" onclick="appendOperator('-')">-</button>
+      <button class="btn" onclick="appendNumber('1')">1</button>
+      <button class="btn" onclick="appendNumber('2')">2</button>
+      <button class="btn" onclick="appendNumber('3')">3</button>
+      <button class="btn" onclick="appendOperator('+')">+</button>
+      <button class="btn zero" onclick="appendNumber('0')">0</button>
+      <button class="btn" onclick="appendDecimal()">.</button>
+      <button class="btn" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    let currentInput = '0';
+    let previousInput = '';
+    let operation = null;
+    let memory = 0;
+    let resetInput = false;
+    let lastOperationWasMemoryRecall = false;
+
+    const screen = document.getElementById('screen');
+    const memoryIndicator = document.getElementById('memory-indicator');
+
+    function formatNumber(num) {
+        // Convert the number to a string to get integer and decimal parts
+        let numStr = num.toString();
+        let decimalIndex = numStr.indexOf('.');
+
+        let integerPart = decimalIndex === -1 ? numStr : numStr.substring(0, decimalIndex);
+
+        // If integer part has more than 8 characters, return "Error"
+        if (integerPart.length > 8) {
+            return "Error";
+        }
+
+        // Try from a high number of decimal places down to 0
+        for (let d = 20; d >= 0; d--) {
+            // Round the number to d decimal places
+            let scale = Math.pow(10, d);
+            let roundedNum = Math.round(num * scale) / scale;
+
+            // Convert to string and remove trailing zeros and decimal point if needed
+            let roundedStr = roundedNum.toString();
+            roundedStr = roundedStr.replace(/(\.?0+$)/, '');
+
+            // Check if the length is <= 8
+            if (roundedStr.length <= 8) {
+                return roundedStr;
+            }
+        }
+
+        // If even rounding to 0 decimal places doesn't fit
+        return "Error";
+    }
+
+    function displayResult() {
+      screen.textContent = formatNumber(Number(currentInput));
+      memoryIndicator.textContent = memory !== 0 ? 'M' : '';
+    }
+    
+    function updateScreen() {
+      screen.textContent = currentInput;
+      memoryIndicator.textContent = memory !== 0 ? 'M' : '';
+    }
+
+    function appendNumber(number) {
+      if (lastOperationWasMemoryRecall) {
+        lastOperationWasMemoryRecall = false;
+      }
+
+      if (currentInput === '0' || resetInput) {
+        currentInput = number;
+        resetInput = false;
+      } else {
+        currentInput += number;
+      }
+      updateScreen();
+    }
+
+    function appendDecimal() {
+      if (lastOperationWasMemoryRecall) {
+        lastOperationWasMemoryRecall = false;
+      }
+
+      if (resetInput) {
+        currentInput = '0.';
+        resetInput = false;
+      } else if (!currentInput.includes('.')) {
+        currentInput += '.';
+      }
+      updateScreen();
+    }
+
+    function appendOperator(op) {
+      if (lastOperationWasMemoryRecall) {
+        lastOperationWasMemoryRecall = false;
+      }
+
+      if (operation !== null) {
+        calculate();
+      }
+      previousInput = currentInput;
+      operation = op;
+      resetInput = true;
+    }
+
+    function calculate() {
+      let result;
+      const prev = parseFloat(previousInput);
+      const current = parseFloat(currentInput);
+
+      if (isNaN(prev) || isNaN(current)) return;
+
+      switch (operation) {
+        case '+':
+          result = prev + current;
+          break;
+        case '-':
+          result = prev - current;
+          break;
+        case '*':
+          result = prev * current;
+          break;
+        case '/':
+          result = prev / current;
+          break;
+        default:
+          return;
+      }
+
+      currentInput = result.toString();
+      operation = null;
+      displayResult();
+    }
+
+    function clearAll() {
+      currentInput = '0';
+      previousInput = '';
+      operation = null;
+      memory = 0;
+      updateScreen();
+    }
+
+    function clearEntry() {
+      currentInput = '0';
+      updateScreen();
+    }
+
+    function memoryAdd() {
+      memory += parseFloat(currentInput);
+      displayResult();
+    }
+
+    function memorySubtract() {
+      memory -= parseFloat(currentInput);
+      displayResult();
+    }
+/*
+    function memoryRecall() {
+      if (lastOperationWasMemoryRecall) {
+        memory = 0;
+        lastOperationWasMemoryRecall = false;
+      } else {
+        currentInput = memory.toString();
+        lastOperationWasMemoryRecall = true;
+      }
+      updateScreen();
+    }
+*/
+    function memoryRecall() {
+      currentInput = memory.toString();
+      lastOperationWasMemoryRecall = true;
+      displayResult();
+    }
+
+    function percentage() {
+      if (operation !== null && previousInput !== '') {
+        const prev = parseFloat(previousInput);
+        const current = parseFloat(currentInput);
+
+        if (!isNaN(prev) && !isNaN(current)) {
+          switch (operation) {
+            case '+':
+            case '-':
+              currentInput = (prev * current / 100).toString();
+              break;
+            case '*':
+            case '/':
+              currentInput = (current / 100).toString();
+              break;
+          }
+        } else if (!isNaN(parseFloat(currentInput))) {
+          currentInput = (parseFloat(currentInput) / 100).toString();
+        }
+      resetInput = true;
+      displayResult();
+    }
+  }
+
+    function squareRoot() {
+      const current = parseFloat(currentInput);
+      if (!isNaN(current) && current >= 0) {
+        currentInput = Math.sqrt(current).toString();
+      } else {
+        currentInput = 'Error';
+      }
+      displayResult();
+    }
+
+    // Add button press animation
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mousedown', function() {
+        this.classList.add('pressed');
+      });
+      btn.addEventListener('mouseup', function() {
+        this.classList.remove('pressed');
+      });
+      btn.addEventListener('touchstart', function() {
+        this.classList.add('pressed');
+      });
+      btn.addEventListener('touchend', function() {
+        this.classList.remove('pressed');
+      });
+    });
+  </script>
+  <script>
+    if (typeof navigator.serviceWorker !== 'undefined') {
+        navigator.serviceWorker.register('sw.js')
+    }
+</script>
+</body>
+</html>
+
