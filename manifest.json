@@ -2,7 +2,6 @@
   "name": "AS-8.1 Calculator",
   "short_name": "AS-8.1",
   "description": "My PWA version of a small pocket calculator, inspired by one I own.",
-  "start_url": "/AS-8.1-Calculator",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
@@ -79,6 +78,4 @@
     }
   ],
   "orientation": "portrait",
-  "scope": "/",
-  "lang": "en"
 }
