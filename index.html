@@ -15,21 +15,23 @@
     
     body {
       margin: 0;
-      padding: 20px;
+      padding: 5px;
       background-color: #f0f0f0;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100%;
       font-family: Arial, sans-serif;
     }
 
     .calculator {
-      width: 100%;
       max-width: 300px;
       background: #333;
       padding: 15px;
       border-radius: 8px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
 
     .screen-container {
@@ -93,8 +95,8 @@
       color: white;
     }
 
-    .btn.zero {
-      grid-column: span 2;
+    .btn.plus {
+      grid-row: span 2;
     }
   </style>
 </head>
@@ -105,12 +107,12 @@
       <div class="screen" id="screen">0</div>
     </div>
     <div class="buttons">
-      <button class="btn on-c" onclick="clearAll()">ON/C</button>
+      <button class="btn on-c" onclick="clearAll()">ON</button>
       <button class="btn" onclick="memoryRecall()">RM</button>
       <button class="btn" onclick="memoryAdd()">M+</button>
       <button class="btn" onclick="memorySubtract()">M-</button>
       <button class="btn cl" onclick="clearEntry()">CL</button>
-      <button class="btn" onclick="percentage()">% ±</button>
+      <button class="btn" onclick="percentage()">%±</button>
       <button class="btn" onclick="squareRoot()">√</button>
       <button class="btn" onclick="appendOperator('/')">÷</button>
       <button class="btn" onclick="appendNumber('7')">7</button>
@@ -124,8 +126,8 @@
       <button class="btn" onclick="appendNumber('1')">1</button>
       <button class="btn" onclick="appendNumber('2')">2</button>
       <button class="btn" onclick="appendNumber('3')">3</button>
-      <button class="btn" onclick="appendOperator('+')">+</button>
-      <button class="btn zero" onclick="appendNumber('0')">0</button>
+      <button class="btn plus" onclick="appendOperator('+')">+</button>
+      <button class="btn" onclick="appendNumber('0')">0</button>
       <button class="btn" onclick="appendDecimal()">.</button>
       <button class="btn" onclick="calculate()">=</button>
     </div>
