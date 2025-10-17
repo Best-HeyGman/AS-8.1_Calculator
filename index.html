@@ -62,6 +62,7 @@
       font-size: 42px;
       font-family: "DigitalNumbers-Regular", monospace;
       overflow: clip;
+      box-shadow: inset 3px 3px 3px #222, inset 3px 3px 3px #222, inset 3px 3px 3px #222, inset 3px 3px 3px #222
     }
 
     .buttons {
@@ -79,6 +80,7 @@
       cursor: pointer;
       font-size: 18px;
       transition: transform 0.1s ease, background-color 0.1s ease;
+      box-shadow: 3px 3px 3px #444, 3px 3px 3px #222, inset 3px 3px 3px #131313, inset 3px 3px 3px #302f2f;
     }
 
     .btn:active {
@@ -93,6 +95,7 @@
     .btn.on-c, .btn.cl {
       background: #d9534f;
       color: white;
+      box-shadow: 3px 3px 3px #444, 3px 3px 3px #222, inset 3px 3px 3px #de6d6d, inset 3px 3px 3px #cf7676;
     }
 
     .btn.plus {
@@ -112,7 +115,7 @@
       <button class="btn" onclick="memoryAdd()">M+</button>
       <button class="btn" onclick="memorySubtract()">M-</button>
       <button class="btn cl" onclick="clearEntry()">CL</button>
-      <button class="btn" onclick="percentage()">%±</button>
+      <button class="btn" onclick="percentage()">%</button>
       <button class="btn" onclick="squareRoot()">√</button>
       <button class="btn" onclick="appendOperator('/')">÷</button>
       <button class="btn" onclick="appendNumber('7')">7</button>
@@ -148,6 +151,7 @@
         // Convert the number to a string to get integer and decimal parts
         let numStr = num.toString();
         let decimalIndex = numStr.indexOf('.');
+        console.log(decimalIndex);
 
         let integerPart = decimalIndex === -1 ? numStr : numStr.substring(0, decimalIndex);
 
@@ -162,12 +166,15 @@
             let scale = Math.pow(10, d);
             let roundedNum = Math.round(num * scale) / scale;
 
-            // Convert to string and remove trailing zeros and decimal point if needed
+            // Convert to string
             let roundedStr = roundedNum.toString();
-            roundedStr = roundedStr.replace(/(\.?0+$)/, '');
 
             // Check if the length is <= 8
             if (roundedStr.length <= 8) {
+                if (!decimalIndex == -1) {
+                  //remove trailing zeros and decimal point if needed
+                  roundedStr = roundedStr.replace(/(\.?0+$)/, '');
+                }
                 return roundedStr;
             }
         }
@@ -219,9 +226,6 @@
         lastOperationWasMemoryRecall = false;
       }
 
-      if (operation !== null) {
-        calculate();
-      }
       previousInput = currentInput;
       operation = op;
       resetInput = true;
@@ -278,18 +282,7 @@
       memory -= parseFloat(currentInput);
       displayResult();
     }
-/*
-    function memoryRecall() {
-      if (lastOperationWasMemoryRecall) {
-        memory = 0;
-        lastOperationWasMemoryRecall = false;
-      } else {
-        currentInput = memory.toString();
-        lastOperationWasMemoryRecall = true;
-      }
-      updateScreen();
-    }
-*/
+
     function memoryRecall() {
       currentInput = memory.toString();
       lastOperationWasMemoryRecall = true;
@@ -304,23 +297,20 @@
         if (!isNaN(prev) && !isNaN(current)) {
           switch (operation) {
             case '+':
-              currentInput = (prev + prev * (current / 100)).toString();
+              currentInput = (prev * (current / 100)).toString();
               break;
             case '-':
-              currentInput = (prev - prev * (current / 100)).toString();
+              currentInput = (prev * (current / 100)).toString();
               break;
             case '*':
-              currentInput = (prev * current / 100).toString();
+              currentInput = (current / 100).toString();
               break;
             case '/':
-              currentInput = "0";
+              currentInput = (current / 100).toString();
               break;
           }
-        } else if (!isNaN(parseFloat(currentInput))) {
-          currentInput = (parseFloat(currentInput) / 100).toString();
         }
       resetInput = true;
-      displayResult();
     }
   }
 
