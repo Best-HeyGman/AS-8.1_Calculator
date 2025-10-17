@@ -304,12 +304,16 @@
         if (!isNaN(prev) && !isNaN(current)) {
           switch (operation) {
             case '+':
+              currentInput = (prev + prev * (current / 100)).toString();
+              break;
             case '-':
-              currentInput = (prev * current / 100).toString();
+              currentInput = (prev - prev * (current / 100)).toString();
               break;
             case '*':
+              currentInput = (prev * current / 100).toString();
+              break;
             case '/':
-              currentInput = (current / 100).toString();
+              currentInput = 0.toString();
               break;
           }
         } else if (!isNaN(parseFloat(currentInput))) {
